@@ -1,89 +1,8 @@
-# def build_ca(input_var=None, batch_size=32,time_context=30,feat_size=513):
-#     """
-#     Builds a network with lasagne
-    
-#     Parameters
-#     ----------
-#     input_var : Theano tensor
-#         The input for the network
-#     batch_size : int, optional
-#         The number of examples in a batch   
-#     time_context : int, optional
-#         The time context modeled by the network. 
-#     feat_size : int, optional
-#         The feature size modeled by the network (last dimension of the feature vector)
-#     Yields
-#     ------
-#     l_out : Theano tensor
-#         The output of the network
-#     """
+"""
 
-#     input_shape=(batch_size,1,time_context,feat_size)
-
-#     #input layer
-#     l_in_1 = keras.engine.input_layer.Input(shape=input_shape, input_var=input_var)
-
-#     #vertical convolution layer
-#     l_conv1 = keras.layers.Conv2D(l_in_1, filters=50, filter_size=(1,feat_size),strides=(1,1), padding='valid', use_bias=True, bias_initializer='asdfa', bias_regularizer='asfa')
-#     l_conv1b= lasagne.layers.BiasLayer(l_conv1) # --> meter en conv2D con use_bias=True
-
-#     #horizontal convolution layer
-#     l_conv2 = lasagne.layers.Conv2DLayer(l_conv1b, num_filters=50, filter_size=(int(time_context/2),1),stride=(1,1), pad='valid', nonlinearity=None)
-#     l_conv2b= lasagne.layers.BiasLayer(l_conv2)
-
-#     #bottlneck layer
-#     l_fc=lasagne.layers.DenseLayer(l_conv2b,128)
-
-#     #build output for source1
-#     l_fc11=lasagne.layers.DenseLayer(l_fc,l_conv2.output_shape[1]*l_conv2.output_shape[2]*l_conv2.output_shape[3])
-#     l_reshape1 = lasagne.layers.ReshapeLayer(l_fc11,(batch_size,l_conv2.output_shape[1],l_conv2.output_shape[2], l_conv2.output_shape[3]))
-#     l_inverse11=lasagne.layers.InverseLayer(l_reshape1, l_conv2)
-#     l_inverse41=lasagne.layers.InverseLayer(l_inverse11, l_conv1)
-
-#     #build output for source2
-#     l_fc12=lasagne.layers.DenseLayer(l_fc,l_conv2.output_shape[1]*l_conv2.output_shape[2]*l_conv2.output_shape[3])
-#     l_reshape2 = lasagne.layers.ReshapeLayer(l_fc12,(batch_size,l_conv2.output_shape[1],l_conv2.output_shape[2], l_conv2.output_shape[3]))
-#     l_inverse12=lasagne.layers.InverseLayer(l_reshape2, l_conv2)
-#     l_inverse42=lasagne.layers.InverseLayer(l_inverse12, l_conv1)
-
-#     #build output for source3
-#     l_fc13=lasagne.layers.DenseLayer(l_fc,l_conv2.output_shape[1]*l_conv2.output_shape[2]*l_conv2.output_shape[3])
-#     l_reshape3 = lasagne.layers.ReshapeLayer(l_fc13,(batch_size,l_conv2.output_shape[1],l_conv2.output_shape[2], l_conv2.output_shape[3]))
-#     l_inverse13=lasagne.layers.InverseLayer(l_reshape3, l_conv2)
-#     l_inverse43=lasagne.layers.InverseLayer(l_inverse13, l_conv1)
-
-#     #build output for source4
-#     l_fc14=lasagne.layers.DenseLayer(l_fc,l_conv2.output_shape[1]*l_conv2.output_shape[2]*l_conv2.output_shape[3])
-#     l_reshape4 = lasagne.layers.ReshapeLayer(l_fc12,(batch_size,l_conv2.output_shape[1],l_conv2.output_shape[2], l_conv2.output_shape[3]))
-#     l_inverse14=lasagne.layers.InverseLayer(l_reshape4, l_conv2)
-#     l_inverse44=lasagne.layers.InverseLayer(l_inverse14, l_conv1)
-
-#     #build final output 
-#     l_merge=lasagne.layers.ConcatLayer([l_inverse41,l_inverse42,l_inverse43,l_inverse44],axis=1)
-#     l_out = lasagne.layers.NonlinearityLayer(lasagne.layers.BiasLayer(l_merge), nonlinearity=lasagne.nonlinearities.rectify)
-   
-#     return l_out
-
-# ####################################################################################
+Modifications to trainCNN.py at DeepConvSep -----> translation from Lasagne, Theano to Keras, Tensorflow
 
 """
-    This file is part of DeepConvSep.
-
-    Copyright (c) 2014-2017 Marius Miron  <miron.marius at gmail.com>
-
-    DeepConvSep is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    DeepConvSep is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with DeepConvSep.  If not, see <http://www.gnu.org/licenses/>.
- """
 
 import os,sys
 import transform
@@ -124,7 +43,7 @@ def load_model(filename):
     return params
 
 def save_model(filename, model):
-    params=lasagne.layers.get_all_param_values(model)
+    params=lasagne.layers.get_all_param_values(model) ################
     f = file(filename, 'wb')
     cPickle.dump(params,f,protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
@@ -183,7 +102,7 @@ def build_ca(input_var=None, batch_size=32,time_context=30,feat_size=513):
     inv_hor_4=Conv2DTranspose(50, (int(time_context/2),1), strides=(1,1), padding='valid')(reshape_4)
     inv_ver_4=Conv2DTranspose(50, (1,feat_size), strides=(1,1), padding='valid')(inv_hor_4)
 
-    merged=Concatenate([inv_ver_1,inv_ver_2,inv_ver_3,inv_ver_4], axis=1, use_bias=True)
+    merged=Concatenate([inv_ver_1,inv_ver_2,inv_ver_3,inv_ver_4], axis=1, use_bias=True) #### Comprobar si Concatenate admite use_bias
 
     #main_out = lasagne.layers.NonlinearityLayer(lasagne.layers.BiasLayer(l_merge), nonlinearity=lasagne.nonlinearities.rectify)
     main_out=ReLU(max_value=None, negative_slope=0.0, threshold=0.0)(merged)
@@ -213,7 +132,7 @@ def train_auto(train,fun,transform,testdir,outdir,num_epochs=30,model="1.pkl",sc
     ----------
     train : Callable, e.g. LargeDataset object
         The callable which generates training data for the network: inputs, target = train()
-    fun : lasagne network object, Theano tensor
+    fun : KERAS network object, TF tensor
         The network to be trained  
     transform : transformFFT object
         The Transform object which was used to compute the features (see compute_features.py)
@@ -431,9 +350,4 @@ def reset_weights(model):
             
 reset_weights(model)
 
-model.fit(train, onehot_train,
-         epochs=10,
-         batch_size=128,
-         validation_data=(test, onehot_test),
-         verbose=1)
 """
