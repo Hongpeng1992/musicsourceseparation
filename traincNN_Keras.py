@@ -168,7 +168,7 @@ def train_auto(train,fun,transform,testdir,outdir,num_epochs=30,model="1.pkl",sc
     
     if load:
         params=load_model(model)
-        lasagne.layers.set_all_param_values(network2,params) ## keras.layers(set_weights(params))
+        lasagne.layers.set_all_param_values(network2,params) ## model(set_weights(params))
 
     prediction2 = lasagne.layers.get_output(network2, deterministic=True)
 
